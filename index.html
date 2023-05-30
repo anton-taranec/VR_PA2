@@ -24,22 +24,22 @@
 <div>
     <div>
         <span>Eye separation</span>
-        <input id="eyes" type="range" min="0" max="100" step="1" value="12">
-        <span class="slider-value">0</span>
+        <input id="eyes" type="range" min="0" max="100" step="1" value="3">
+        <span class="spanValue">0</span>
     </div>
     <div>
         <span>Field of View</span>
-        <input id="fov" type="range" min="0" max="3.14" step="0.02" value="0.45">
+        <input id="fov" type="range" min="0" max="3.14" step="0.02" value="0.3">
         <span class="slider-value">0</span>
     </div>
     <div>
         <span>Near Clipping distance</span>
-        <input id="near" type="range" min="0" max="45" step="0.25" value="30">
+        <input id="near" type="range" min="0" max="45" step="0.25" value="17">
         <span class="slider-value">0</span>
     </div>
     <div>
         <span>Convergence</span>
-        <input id="conv" type="range" min="100" max="2000" step="10" value="1500">
+        <input id="conv" type="range" min="100" max="2000" step="10" value="1300">
         <span class="slider-value">0</span>
     </div>
 </div>
@@ -48,5 +48,6 @@
    <canvas width="600" height="600" id="webglcanvas" style="background-color:red"></canvas>
 </div>
 
+<button onclick="requestDeviceOrientation()" style="width: 200px; height: 200px; margin-right: 50vw;">Access to the sensor</button>
 
 </body></html>

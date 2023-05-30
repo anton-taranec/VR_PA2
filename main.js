@@ -172,6 +172,9 @@ function draw() {
 
     let matAccum = m4.multiply(rotateToPointZero, modelView);
     let matAccum0 = m4.multiply(rotateToPointZero, initialMat);
+	if (matrix != null) {
+		matAccum = m4.multiply(rotateToPointZero, matrix);
+	}
     let matAccum1 = m4.multiply(translateToPointZero, matAccum);
     let matAccum01 = m4.multiply(translateToPointZero, matAccum0);
     let matAccumLeft = m4.multiply(translateToLeft, matAccum1);
@@ -190,7 +193,8 @@ function draw() {
 
 
     gl.uniform1f(shProgram.iScale, 1)
-    gl.bindTexture(gl.TEXTURE_2D, texturevid);
+	gl.enable(gl.TEXTURE_2D);
+    /*gl.bindTexture(gl.TEXTURE_2D, texturevid);
     gl.texImage2D(
         gl.TEXTURE_2D,
         0,
@@ -199,12 +203,12 @@ function draw() {
         gl.UNSIGNED_BYTE,
         video
     );
-    webCam.Draw();
+    webCam.Draw();*/
 
     gl.clear(gl.DEPTH_BUFFER_BIT);
 
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    // gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, modelViewProjection);
+    gl.uniformMatrix4fv(shProgram.iModelViewProjectionMatrix, false, modelViewProjection);
     gl.uniform1i(shProgram.iTMU, 0);
     gl.enable(gl.TEXTURE_2D);
     gl.uniform1f(shProgram.iScale, userScaleFactor)
@@ -422,11 +426,11 @@ function init() {
         canvas.width = resolution;
         canvas.height = resolution;
         gl.viewport(0, 0, resolution, resolution);
-        video = document.createElement('video');
-        video.setAttribute('autoplay', true);
-        window.vid = video;
-        getWebcam();
-        CreateWebCamTexture();
+        //video = document.createElement('video');
+        //video.setAttribute('autoplay', true);
+        //window.vid = video;
+        //getWebcam();
+        //CreateWebCamTexture();
         if (!gl) {
             throw "Browser does not support WebGL";
         }
@@ -544,27 +548,61 @@ function LoadTexture() {
     }
 }
 
-window.onkeydown = (e) => {
-    switch (e.keyCode) {
-        case 87:
-            userPointCoord.x -= 0.01;
-            break;
-        case 83:
-            userPointCoord.x += 0.01;
-            break;
-        case 65:
-            userPointCoord.y += 0.01;
-            break;
-        case 68:
-            userPointCoord.y -= 0.01;
-            break;
-    }
-    userPointCoord.x = Math.max(0.001, Math.min(userPointCoord.x, 0.999))
-    userPointCoord.y = Math.max(0.001, Math.min(userPointCoord.y, 0.999))
-    draw();
+let matrix = null;
+function requestDeviceOrientation() {
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+    typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission()
+      .then(response => {
+        console.log(response);
+        if (response === 'granted') {
+          console.log('Permission granted');
+          window.addEventListener('deviceorientation', e => {
+            matrix = getRotationMatrix(e.alpha, e.beta, e.gamma);
+          }, true);
+        }
+      }).catch((err => {
+        console.log('Err', err);
+      }));
+  } else
+    console.log('not iOS');
 }
 
-onmousemove = (e) => {
-    userScaleFactor = map(e.clientX, 0, window.outerWidth, 0.1, 10.0)
-    draw()
+var degtorad = Math.PI / 180; // Degree-to-Radian conversion
+
+function getRotationMatrix(alpha, beta, gamma) {
+
+  var _x = beta ? beta * degtorad : 0; // beta value
+  var _y = gamma ? gamma * degtorad : 0; // gamma value
+  var _z = alpha ? alpha * degtorad : 0; // alpha value
+
+  var cX = Math.cos(_x);
+  var cY = Math.cos(_y);
+  var cZ = Math.cos(_z);
+  var sX = Math.sin(_x);
+  var sY = Math.sin(_y);
+  var sZ = Math.sin(_z);
+
+  //
+  // ZXY rotation matrix construction.
+  //
+
+  var m11 = cZ * cY - sZ * sX * sY;
+  var m12 = - cX * sZ;
+  var m13 = cY * sZ * sX + cZ * sY;
+
+  var m21 = cY * sZ + cZ * sX * sY;
+  var m22 = cZ * cX;
+  var m23 = sZ * sY - cZ * cY * sX;
+
+  var m31 = - cX * sY;
+  var m32 = sX;
+  var m33 = cX * cY;
+
+  return [
+    m11, m12, m13, 0,
+    m21, m22, m23, 0,
+    m31, m32, m33, 0, 0, 0, 0, 1
+  ];
+
 };
